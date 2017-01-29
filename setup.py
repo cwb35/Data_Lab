@@ -20,7 +20,7 @@ import warnings
 warnings.filterwarnings('ignore')
 #import argparse
 
-DATA_PATH = "./test_data/"
+DATA_PATH = "./Data/WiFi_Data/"
 CONVERT_TIME = lambda x: parse(x.replace('+00', ''))
 
 def run():

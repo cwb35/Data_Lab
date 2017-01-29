@@ -5,7 +5,7 @@ Created on Fri Jan 20 23:23:44 2017
 @author: Colin
 """
 
-from flask import Flask, request, abort
+from flask import Flask, request, abort, render_template
 import sqlite3
 import pandas as pd
 from json import dumps
@@ -14,7 +14,7 @@ app = Flask(__name__)
 unh_buildings = pd.read_csv(r'./Data/Building_Locations.csv')
 list_buildings = unh_buildings['building_names'].tolist()
 
-def get_paths(wifi_df, start_building=None):
+def get_paths(wifi_df, start_building=None, num=10):
     """
     Returns nested dictionary of all building paths and # of people who took 
     path for specified day and hour.
@@ -38,15 +38,27 @@ def get_paths(wifi_df, start_building=None):
             except KeyError:
                 pass
             mac_add[mac] = building#Set mac_add[mac] current value to _building
+    print("start_building: ", start_building)
     if start_building != None:
+        print(start_building, "THIS IS GOOD!")
         path_list = [(key[0], key[1], value) for key, value in paths.items() 
                         if (value != 0) & (key[0] == start_building)]
     else:
         path_list = [(key[0], key[1], value) for key, value in paths.items() if value!=0]
+        
+    
     return pd.DataFrame(path_list, columns=['start', 'end', 'count']).sort(columns=['count'],
-                        ascending=False)
+                        ascending=False).head(num)
+@app.route('/')
+def index():
+    Hour = request.args.get('Hour', '')
+    Weekday = request.args.get('Weekday', '')
+    Building = request.args.get("Building", '')
+    
+    return render_template('indexBEFORE.html', Hour=Hour, Weekday=Weekday, 
+                           Building=Building)
 
-@app.route('/api/wifi')
+@app.route('/api/wifi', methods=['GET', 'POST'])
 def get_wifi_data():
     
     con = sqlite3.connect('WiFi_Database.sqlite')
@@ -60,10 +72,14 @@ def get_wifi_data():
         query = ' AND'.join(query_dict.values())
         data = pd.read_sql_query('SELECT * FROM wifi_09_19 WHERE {}'.format(query),
                                  con)
-        data_paths = get_paths(data, request.args.get('Building')).to_json(orient='records')
-        return dumps(data_paths)#dumps(data.to_json(orient='records'))
+        print("request.args.get('Building'): ", request.args.get("Building"))
+        df = get_paths(data, start_building=request.args.get('Building'))
+        data_paths = df.to_json(orient='records')
+        df.to_json('sample.json', orient='records')
+        
+        return data_paths#dumps(data_paths)#dumps(data.to_json(orient='records'))
     else:
         return "NO ARGUMENTS GIVEN!"    
     
 if __name__ == "__main__":
-    app.run(port=8000, debug=True)
+    app.run(port=8001, debug=True)
