@@ -55,7 +55,7 @@ def index():
     Weekday = request.args.get('Weekday', '')
     Building = request.args.get("Building", '')
     
-    return render_template('indexBEFORE.html', Hour=Hour, Weekday=Weekday, 
+    return render_template('index2.html', Hour=Hour, Weekday=Weekday, 
                            Building=Building)
 
 @app.route('/api/wifi', methods=['GET', 'POST'])
