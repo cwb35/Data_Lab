@@ -16,21 +16,42 @@
 	<div class="header">
 		<p> Enter the values in the fields below!</p>
 		<form>
-			hour is = <input id="Hour" type="text" name="Hour" value=0>
+			Start Hour = <input id="startHour" type="text" name="startHour" value=0>
+			End Hour = <input id="endHour" type="text" name="endHour" value=23>
 			Weekday is = <input id="Weekday" type="text" name="Weekday" value=0>
 			Building is = <input id="Building" type="text" name="Building" value="Enter Building">
-			<input name="update" type="Update" value="Update" onclick="updateData()">
+			<input name="update" type="Button" value="Update!" onclick="updateData()">
 		</form>
 	</div>
 	<div class="body">
 		<div class="sidebar">This is the sidebar</div>
-		<div class="geoplot">This is a geoplot</div>
+		<div class="geoplot">
+			<img src="static/images/campus_map3.png"/>
+		</div>
 		<div class="plots">
-			<div class="plot1">Plot1</div>
-			<div class="plot2">Plot2</div>
+			<div id="plot1" class="plot1"></div>
+			<div id = "plot2" class="plot2">
+				<div id="tooltip" class="hidden">
+					<p><strong>Path Information</strong></p>
+					<p><span id="value">100</span>%</p>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
+
+<script type="text/javascript">
+
+	var building_table = d3.map();
+	function lookupTable(data) {
+		data.forEach(function(d){
+			building_table = building_table.set(d.building_names, [d.longitude, d.latitude]);
+		});
+	}
+
+	d3.json("/api/building_coords", lookupTable);
+
+</script>
 
 <script type="text/javascript">
 
@@ -38,7 +59,7 @@
 	//Width and height
 	var w = 600;
 	var h = 250;
-	var margin = { left: 90, top: 30, right: 30, bottom: 30 };
+	var margin = { left: 30, top: 30, right: 30, bottom: 30 };
 	var barPadding = .05;
 	var yColumn = "count";
 	var xColumn = "end";
@@ -62,7 +83,7 @@
 					.range([50, 250]);
 	
 	//Create SVG element
-	var svg = d3.select("body")
+	var svg = d3.select("#plot2")
 				.append("svg")
 				.attr("width", w)
 				.attr("height", h);
@@ -177,59 +198,177 @@
 		   });
 
 	}
+
+	function printData(data){
+		console.log("MADE IT HERE! "+ data);
+		console.log("TIME: "+data[0]['Time']);
+		data[0]['Time'].forEach(function(d){
+			console.log(d['Hour'], d['Count']);
+		});
+	}
+
 	function updateData(){
 
-			var Hour = d3.select("#Hour").property("value");
+			var startHour = d3.select("#startHour").property("value");
+			var endHour = 1 + parseInt(d3.select("#endHour").property("value"));
+			console.log("startHour: " + startHour)
+			console.log("endHour: " + endHour)
+			console.log("newRange: " + d3.range(startHour, endHour))
+			var Hour = d3.range(startHour, endHour)
 			var Weekday = d3.select("#Weekday").property("value");
 			var Building = d3.select("#Building").property("value");
-			console.log("HOUR IS: "+Hour+" WEEKDAY IS: "+Weekday+" BUILDING IS: "+Building);
+			console.log("HOUR IS: "+Hour.toString()+" WEEKDAY IS: "+Weekday+" BUILDING IS: "+Building);
+
+			d3.json("/api/all?Hour="+Hour.toString()+"&Weekday="+Weekday+"&Building="+Building, printData);
+
 
 			if (initialized==0){
-				d3.json("/api/wifi?Hour="+Hour+"&Weekday="+Weekday+"&Building="+Building, type);
+				d3.json("/api/wifi?Hour="+Hour.toString()+"&Weekday="+Weekday+"&Building="+Building, type);
+				d3.json("/api/connections?Hour="+Hour.toString()+"&Weekday="+Weekday+"&Building="+Building, type2);
 			}
 			else{
-				d3.json("/api/wifi?Hour="+Hour+"&Weekday="+Weekday+"&Building="+Building, update);
+				d3.json("/api/wifi?Hour="+Hour.toString()+"&Weekday="+Weekday+"&Building="+Building, update);
+				d3.json("/api/connections?Hour="+Hour.toString()+"&Weekday="+Weekday+"&Building="+Building, update2);
 			}
 	}
-	//Create labels
-	/*svg.selectAll("text")
-	   .data(dataset)
-	   .enter()
-	   .append("text")
-	   .text(function(d) {
-	   		return d;
-	   })
-	   .attr("text-anchor", "middle")
-	   .attr("x", function(d, i) {
-	   		return xScale(i) + xScale.bandwidth() / 2;
-	   })
-	   .attr("y", function(d) {
-	   		return h - yScale(d) + 14;
-	   })
-	   .attr("font-family", "sans-serif")
-	   .attr("font-size", "11px")
-	   .attr("fill", "white");*/
 
-	//d3.json("sample.json", type);
-
-	//On submit, update with new data			
-	/*d3.select("form")
-		.on("submit", function() {
-			console.log('SUBMITTED!');
-
-			if (initialized==0){
-				d3.json("/api/wifi?Hour="+Hour+"&Weekday="+Weekday+"&Building="+Building, type);
-			}
-			console.log("ARE YOU MAKING IT HERE!?");
-			//else{
-			//	d3.json("/api/wifi?Hour={{Hour}}&Weekday={{Weekday}}&Building={{Building}}", update);
-			//}
-		});*/
-
-	//{% if Hour %}
-	//	d3.json("/api/wifi?Hour={{Hour}}&Weekday={{Weekday}}&Building={{Building}}", type);
-	//{% endif %}
 </script>
+<script>      
+
+      //Width and height
+      var w2 = 300;
+      var h2 = 300;
+      var circleRadius = 5;
+      var margin2 = { left: 50, top: 30, right: 30, bottom: 30 };
+      var xColumn2 = 'Hour';
+      var yColumn2 = 'Count';
+
+      //Inner SVG dimensions
+      var innerWidth2  = w2 - margin2.left - margin2.right;
+      var innerHeight2 = h2 - margin2.top  - margin2.bottom;
+
+      var svg2 = d3.select("#plot1").append("svg")
+        .attr("width", w2)
+        .attr("height", h2);
+
+      var xScale2 = d3.scaleBand().range([0, innerWidth2]);
+      var yScale2 = d3.scaleLinear().range([innerHeight2, 0]);
+
+      //Appending group to svg
+      var g2 = svg2.append("g")
+      .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+      //Adding x-axis to new group and translating axis
+      var xAxisG2 = g2.append("g")
+                    .attr("transform", "translate(0," + innerHeight2 + ")");
+
+      //Adding y-axis to new group but setting no attributes
+      var yAxisG2 = g2.append("g");
+
+      //x and y axis
+      var xAxis2 = d3.axisBottom(xScale2);
+      var yAxis2 = d3.axisLeft(yScale2);
+
+      // // text label for the y axis
+      // g2.append("text")
+      //       .attr("transform", "rotate(-90)")
+      //       .attr("y", 0 - margin2.left)
+      //       .attr("x",0 - (innerHeight2 / 2))
+      //       .attr("dy", "1em")
+      //       .style("text-anchor", "middle")
+      //       .text("Count");
+
+      // // text label for the x axis
+      // svg2.append("text")             
+      //     .attr("transform",
+      //           "translate(" + (w2/2) + " ," + 
+      //                          (innerHeight2 + margin2.top + 30) + ")")
+      //     .style("text-anchor", "middle")
+      //     .text("Hour");
+
+      function render2(data){
+
+      	// text label for the y axis
+	    g2.append("text")
+	            .attr("transform", "rotate(-90)")
+	            .attr("y", 0 - margin2.left)
+	            .attr("x",0 - (innerHeight2 / 2))
+	            .attr("dy", "1em")
+	            .style("text-anchor", "middle")
+	            .text("Count");
+
+	    // text label for the x axis
+	    svg2.append("text")             
+	          .attr("transform",
+	                "translate(" + (w2/2) + " ," + 
+	                               (innerHeight2 + margin2.top + 30) + ")")
+	          .style("text-anchor", "middle")
+	          .text("Hour");
+
+        xScale2.domain(data.map( function (d){ return d[xColumn2]; }));
+        yScale2.domain([0, d3.max(data, function (d){ return d[yColumn2]; })]);
+
+        xAxisG2.call(xAxis2);
+        yAxisG2.call(yAxis2);
+
+        var circles = g2.selectAll("circle")
+          .data(data)
+          .enter()
+          .append("circle")
+          .attr("class", "circle")
+          .attr("r", circleRadius);
+
+        circles
+          .attr("cx", function (d){ 
+            console.log("d[xColumn]: " + d[xColumn2]);
+            console.log("xScale(d[xColumn]): " + xScale2(d[xColumn2]));
+            return xScale2(d[xColumn2]) + margin2.right - circleRadius; })
+          .attr("cy", function (d){ return yScale2(d[yColumn2]); });
+        
+        circles.exit().remove();
+
+      }
+
+      // function type2(d){
+      //   console.log("TYPE: " + d.Count);
+      //   d.Count = +d.Count;
+      //   //d.Hour = +d.Hour;
+      //   return d;
+      // }
+      function type2(data) {
+		//console.log(data);
+		data.forEach(function(d){
+			d.Count = +d.Count;
+		});
+		render2(data);
+	}
+
+      function update2(data){
+		console.log("UPDATING CONNECTION TIME CHART NOW!");
+		data.forEach(function(d){
+			d.Count = +d.Count;
+		});
+
+		yScale2.domain([0, d3.max(data, function (d){ return d[yColumn2]; })]);
+		xScale2.domain(data.map( function (d){ return d[xColumn2]; }));
+
+		xAxisG2.call(xAxis2);
+		yAxisG2.call(yAxis2);
+
+		g2.selectAll("circle")
+		   .data(data)
+		   .transition()
+		   .attr("cx", function (d){return xScale2(d[xColumn2]) + margin2.right - circleRadius; })
+          .attr("cy", function (d){ return yScale2(d[yColumn2]); });
+
+	}
+      // var the_data = [{"Hour":0,"Count":3781},{"Hour":1,"Count":2949},{"Hour":2,"Count":2646},{"Hour":3,"Count":2055},{"Hour":4,"Count":909}];
+      // console.log(the_data);
+      // //data = type(data);
+      // render(the_data);
+   
+
+    </script>
 
 </body>
 

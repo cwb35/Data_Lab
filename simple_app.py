@@ -9,10 +9,43 @@ from flask import Flask, request, abort, render_template
 import sqlite3
 import pandas as pd
 from json import dumps
+from collections import Counter
 
 app = Flask(__name__)
 unh_buildings = pd.read_csv(r'./Data/Building_Locations.csv')
 list_buildings = unh_buildings['building_names'].tolist()
+@app.route('/api/all', methods=['GET', 'POST'])
+def get_data():
+    
+    con = sqlite3.connect('WiFi_Database.sqlite')
+    query_dict = {}
+    data = 'no hours'
+    for key in ["Hour", "Weekday"]:
+        arg = request.args.get(key)
+        if arg:
+            query_dict[key] = ' ' + key + ' IN ({key})'.format(key=arg)
+    if len(query_dict) > 0:
+        query = ' AND'.join(query_dict.values())
+        data = pd.read_sql_query('SELECT * FROM wifi_09_19 WHERE {}'.format(query),
+                                 con)
+        hour_count = Counter(data["Hour"])
+        building_count = Counter(data["Building"])
+        time_df = pd.DataFrame([(hour, count) for hour, count in hour_count.items()],
+                            columns=["Hour", "Count"])
+        bad_buildings = {"Woodman", "Craft", "DeMeritt", "Woodside"}
+        building_df = pd.DataFrame([(building, count) for building, count in building_count.items() if building not in bad_buildings],
+                            columns=["Building", "Count"])
+        path_df = get_paths(data, start_building=request.args.get("Building"))
+        
+        json_df = {
+                    "Time":time_df.to_dict(orient="records"), 
+                    "Buildings":building_df.to_dict(orient="records"), 
+                    "Paths":path_df.to_dict(orient="records")
+                    }
+        
+        json_str = "["+str(json_df)+"]"
+        #print(json_str.replace("'", '"'))
+        return json_str.replace("'", '"')#"["+str(json_df)+"]"
 
 def get_paths(wifi_df, start_building=None, num=10):
     """
@@ -47,15 +80,47 @@ def get_paths(wifi_df, start_building=None, num=10):
         path_list = [(key[0], key[1], value) for key, value in paths.items() if value!=0]
         
     
-    return pd.DataFrame(path_list, columns=['start', 'end', 'count']).sort(columns=['count'],
+    return pd.DataFrame(path_list, columns=["start", "end", "count"]).sort(columns=["count"],
                         ascending=False).head(num)
+                        
+#def get_connctions(wifi_df, start_building=None):
+    
+#    return Counter(wifi_df['Hours'])
+
+@app.route('/api/building_coords', methods=['GET', 'POST'])
+def get_building_coords():
+    df = pd.read_csv('./data/Building_Locations.csv')
+    return df.to_json(orient="records")
+
+@app.route('/api/connections', methods=['GET', 'POST'])
+def get_connection_data():
+    
+    con = sqlite3.connect('WiFi_Database.sqlite')
+    query_dict = {}
+    data = 'no hours'
+    for key in ['Hour', 'Weekday']:
+        arg = request.args.get(key)
+        if arg:
+            query_dict[key] = ' ' + key + ' IN ({key})'.format(key=arg)
+    if len(query_dict) > 0:
+        query = ' AND'.join(query_dict.values())
+        data = pd.read_sql_query('SELECT * FROM wifi_09_19 WHERE {}'.format(query),
+                                 con)
+        print("request.args.get('Building'): ", request.args.get("Building"))
+        #df = get_connections(data, start_building=request.args.get('Building'))
+        c = Counter(data['Hour'])
+        df = pd.DataFrame([(hour, count) for hour, count in c.items()],
+                            columns=['Hour', 'Count'])
+        time_count = df.to_json(orient='records')
+        return time_count
+    
 @app.route('/')
 def index():
     Hour = request.args.get('Hour', '')
     Weekday = request.args.get('Weekday', '')
     Building = request.args.get("Building", '')
     
-    return render_template('index2.html', Hour=Hour, Weekday=Weekday, 
+    return render_template('index4.html', Hour=Hour, Weekday=Weekday, 
                            Building=Building)
 
 @app.route('/api/wifi', methods=['GET', 'POST'])
