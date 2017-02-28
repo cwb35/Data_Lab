@@ -72,6 +72,10 @@
 
   	var lineData = [];
 
+  	var origData = [];
+
+  	var selectedBuilding = "None";
+
 	function pathBarChartBasics() {
 
 		var margin = {top: 30, right: 10, bottom: 10, left: 30},
@@ -202,27 +206,44 @@
 					//.style("top", yPosition + "px");						
 					//.select("#value")
 					//.text("There are "+d.count+" people going to "+d.end);
-		   		d3.selectAll(".circle")
-		   			.attr("class", "uncolor");
-
+		   		if (selectedBuilding == "None"){
+			   		d3.selectAll(".circle")
+			   			.attr("class", "uncolor");
+			   	}
 		   		console.log("#"+d['start'].replace(/\s/g, ""));
 		   		d3.select("#"+d['start'].replace(/\s/g, ""))
 		   			.attr("class", "selected");
 		   		d3.select("#"+d['end'].replace(/\s/g, ""))
 		   			.attr("class", "selected");
+		   		// d3.selectAll(".circle")
+		   		// 	.attr("class", "uncolor");
+
+		   		// console.log("#"+d['start'].replace(/\s/g, ""));
+		   		// d3.select("#"+d['start'].replace(/\s/g, ""))
+		   		// 	.attr("class", "selected");
+		   		// d3.select("#"+d['end'].replace(/\s/g, ""))
+		   		// 	.attr("class", "selected");
 				//Show the tooltip
 				//d3.select("#pathLine").class("hidden", false);
 
 		   })
-		   .on("mouseout", function() {
+		   .on("mouseout", function(d) {
 		   
 				//Hide the tooltip
 				d3.select("#pathLine").classed("hidden", true);
-
-				d3.selectAll(".uncolor")
-		   			.attr("class", "circle");
-		   		d3.selectAll(".selected")
-		   			.attr("class", "circle");
+				if (selectedBuilding == "None"){
+					d3.selectAll(".uncolor")
+			   			.attr("class", "circle");
+			   		d3.selectAll(".selected")
+			   			.attr("class", "circle");
+		   		} else {
+		   			d3.select("#"+d['end'].replace(/\s/g, ""))
+		   				.attr("class", "circle");
+		   		}
+				// d3.selectAll(".uncolor")
+		  //  			.attr("class", "circle");
+		  //  		d3.selectAll(".selected")
+		  //  			.attr("class", "circle");
 				
 		   });;
 
@@ -231,18 +252,21 @@
    			.enter().append("svg:text")
      		.attr("x", 2)
      		.attr("y", function(d, i) { return (i * 25) + 12; })
-     		.attr("fill", "#7FFF00")
-     		.attr("font-size", "10px")
+     		.attr("class", "startLabel")
+     		//.attr("fill", "#7FFF00")
+     		//.attr("font-size", "10px")
 		    .text(function(d){ return d['start']; });
 
 		var endLabels = g2.selectAll("text")
 		    .data(data)
    			.enter().append("svg:text")
-     		.attr("x", function(d) {
-		   		return xScale(d['count']) - 2; })
+     		//.attr("x", function(d) {
+		   	//	return xScale(d['count']) - 2; })
+		   	.attr("class", "endLabel")
+		   	.attr("x", innerWidth)
      		.attr("y", function(d, i) { return (i * 25) + 12; })
-     		.attr("fill", "red")
-     		.attr("font-size", "10px")
+     		//.attr("fill", "red")
+     		//.attr("font-size", "10px")
 		    //.attr("dx", -3) // padding-right
 		    //.attr("dy", ".35em") // vertical-align: middle
 		    .attr("text-anchor", "end") // text-align: right
@@ -288,7 +312,8 @@
 
 		//function renderBarChart(data){
 
-		console.log("RENDERING BAR CHART!");
+		console.log("g2:");
+		console.log(g2);
 		//initialized = 1;
 
 		console.log(data);
@@ -313,26 +338,33 @@
 					//.attr("stroke-width", lineScale(d['count']))
 					.attr("class", "show");
 		   		
-		   		d3.selectAll(".circle")
-		   			.attr("class", "uncolor");
-
+		   		if (selectedBuilding == "None"){
+			   		d3.selectAll(".circle")
+			   			.attr("class", "uncolor");
+			   	}
 		   		console.log("#"+d['start'].replace(/\s/g, ""));
 		   		d3.select("#"+d['start'].replace(/\s/g, ""))
 		   			.attr("class", "selected");
 		   		d3.select("#"+d['end'].replace(/\s/g, ""))
 		   			.attr("class", "selected");
+		   		
 				//Show the tooltip
 				//d3.select("#pathLine").class("hidden", false);
 
 		   })
-		   .on("mouseout", function() {
+		   .on("mouseout", function(d) {
 		   
 				//Hide the tooltip
 				d3.select("#pathLine").classed("hidden", true);
-				d3.selectAll(".uncolor")
-		   			.attr("class", "circle");
-		   		d3.selectAll(".selected")
-		   			.attr("class", "circle");
+				if (selectedBuilding == "None"){
+					d3.selectAll(".uncolor")
+			   			.attr("class", "circle");
+			   		d3.selectAll(".selected")
+			   			.attr("class", "circle");
+		   		} else {
+		   			d3.select("#"+d['end'].replace(/\s/g, ""))
+		   				.attr("class", "circle");
+		   		}
 				
 		   });
 
@@ -340,16 +372,23 @@
 		svg.selectAll('rect').duration(300)
 		  	.attr("width", function(d) { return xScale(d['count']);})
 		  	.attr("opacity",1);
-
-		g.selectAll("text")
+		console.log("TEXT DATA!");
+		console.log(data);
+		g.selectAll(".startLabel")
 		    .data(data)
-		    .text(function(d){ return d['start']; });
+		    .text(function(d){ 
+		    	console.log("STARTING TEXT:");
+		    	console.log(d['start']);
+		    	return d['start']; }
+		    );
+		g.transition().duration(400);
 
 		var endLabels = g2.selectAll("text")
 		    .data(data)
-   			//.enter().append("svg:text")
-     		.attr("x", function(d) {
-		   		return xScale(d['count']) - 2; })
+   			// //.enter().append("svg:text")
+   			// .attr("x", innerWidth)
+     	// 	//.attr("x", function(d) {
+		   	// //	return xScale(d['count']) - 2; })
 		    .text(function(d){ return d['end']; });
 
 		xAxisG.call(xAxis);
@@ -369,6 +408,7 @@
 		data[0]["Paths"].forEach(function(d){
 			d.count = +d.count;
 		});
+		origData = data;
 		//console.log(data);
 		pathBarChart(data[0]["Paths"]);
 		hourScatterPlot(data[0]["Time"]);
@@ -407,9 +447,26 @@
 
 	}
 	function updateCharts(data) {
+		console.log("Update chart data:");
+		console.log(data);
 		updateLineChart(data[0]['Time']);
 		updatePathChart(data[0]['Paths']);
 		updateHeatMap(data[0]['Buildings']);
+	}
+
+	function newQuery(data) {
+		origData = data;
+
+		//Makes sure nothing is selected when query runs
+		if (selectedBuilding != "None"){
+
+   			d3.selectAll(".uncolor")
+	   			.attr("class", "circle");
+	   		d3.selectAll(".selected")
+	   			.attr("class", "circle");
+	   		selectedBuilding = "None";
+		}
+		updateCharts(data);
 	}
 
 	// function printData(data){
@@ -438,7 +495,7 @@
 				initialized = 1;
 				d3.json("/api/all?Hour="+Hour.toString()+"&Weekday="+Weekday, type);//+"&Building="+Building, type);
 			} else {
-				d3.json("/api/all?Hour="+Hour.toString()+"&Weekday="+Weekday, updateCharts);
+				d3.json("/api/all?Hour="+Hour.toString()+"&Weekday="+Weekday, newQuery);//updateCharts);
 			}
 				//d3.json("/api/wifi?Hour="+Hour.toString()+"&Weekday="+Weekday+"&Building="+Building, type);
 				//d3.json("/api/connections?Hour="+Hour.toString()+"&Weekday="+Weekday+"&Building="+Building, type2);
@@ -731,6 +788,14 @@
 
 	}
 
+	function inspectBuilding(data){
+
+		console.log("Before updating");
+		updateLineChart(data[0]['Time']);
+		updatePathChart(data[0]['Paths']);
+		console.log("After updating");
+	}
+
 	/* HEAT MAP */
 	function heatMapBasics(){
 		var coords = {lat1: 43.1451636, lat2: 43.1297806, long1: -70.940935, long2: -70.9262369},
@@ -815,7 +880,48 @@
 			       d3.select("#buildingTooltip").transition()
 			         .duration(500)
 			         .style("opacity", 0); 
-			     });
+			     })
+		  		.on("mousedown", function(d){
+		  			console.log("PRESSED ME!");
+		  			console.log(d);
+
+		  			if(d3.select("#"+d['Building'].replace(/\s/g, "")).attr("class") == "selected"){
+		  				d3.selectAll(".uncolor")
+				   			.attr("class", "circle");
+				   		d3.selectAll(".selected")
+				   			.attr("class", "circle");
+				   		selectedBuilding = "None";
+				   		updateCharts(origData);
+				   		//LOAD ORIGINAL DATA
+
+			   		} else if(selectedBuilding != "None"){
+
+			   			d3.selectAll(".uncolor")
+				   			.attr("class", "circle");
+				   		d3.selectAll(".selected")
+				   			.attr("class", "circle");
+
+				   		d3.json("/api/cache?Building="+d['Building'], inspectBuilding);
+			  			selectedBuilding = d['Building'];
+			  			d3.selectAll(".circle")
+			   			.attr("class", "uncolor");
+
+				   		console.log("#"+d['Building'].replace(/\s/g, ""));
+				   		d3.select("#"+d['Building'].replace(/\s/g, ""))
+				   			.attr("class", "selected");
+			   			//DO STUFF
+			   		}
+			   		else {
+				   		d3.json("/api/cache?Building="+d['Building'], inspectBuilding);
+			  			selectedBuilding = d['Building'];
+			  			d3.selectAll(".circle")
+			   				.attr("class", "uncolor");
+
+				   		console.log("#"+d['Building'].replace(/\s/g, ""));
+				   		d3.select("#"+d['Building'].replace(/\s/g, ""))
+				   			.attr("class", "selected");
+			   		}
+		  		});
 
 		var legendCircleRadius = 5;
 		var legendSpacing = 12;
@@ -824,14 +930,25 @@
 		var legend = svg.append('rect')
 						.attr('class', 'legend')
 						.attr('x', w-130)
-						.attr('y', '30');
+						.attr('y', '15');
+
+		console.log("COLORSCALE!");
+		console.log(colorScale.domain());
 
 		var legendCircles = svg.selectAll('.legend')
-		  .data(colorScale.domain())
+		  .data(colorScale.domain(), function(d, i) { 
+		  	console.log("ADJUSTED DATA:");
+		  	console.log(d);
+		  	console.log(i);
+		  	return d + i; })
 		  .enter()
 		  .append('g')
 		  .attr('class', 'legendCircle')
 		  .attr('transform', function(d, i) {
+
+		  	console.log("INSIDE TRANSFORM:");
+		  	console.log(d);
+		  	console.log(i);
 		    var height = legendCircleRadius + legendSpacing;
 		    var offset =  height * colorScale.domain().length / 2;
 		    var vert = i * height - offset + 75;
@@ -840,8 +957,115 @@
 
 		legendCircles.append('circle')
 		  .attr('r', legendCircleRadius)
+		  .attr('class', 'legCircle')
 		  .style('fill', colorScale)
-		  .style('stroke', colorScale);
+		  .style('stroke', colorScale)
+		  .on('mousedown', function(d){
+		  	    console.log(d);
+		  	    if(selectedBuilding == d){
+		  	    	d3.selectAll(".uncolor")
+				   		.attr("class", "circle");
+			   		d3.selectAll(".selectedL")
+			   			.attr("class", "legCircle");
+			   		d3.selectAll(".uncolorL")
+			   			.attr("class", "legCircle");
+			   		// d3.selectAll(".legCircle")
+			   		//  	.attr("opacity",.5);
+
+			   	// 	d3.selectAll('.leg')
+			   	// 		.attr("class", function(c){
+			   	// 			console.log("in legCircle!");
+			   	// 			console.log(c);
+			   	// 			console.log(d);
+			   	// 			if (c == d) {
+			   	// 				console.log("HERE?");
+							// 	return "legCircSelected";//'selected';
+							// } else {
+							// 	return "legCircUnselected";//'uncolor';
+							// };
+			   	// 		});
+
+			   		selectedBuilding = "None";
+			   		updateCharts(origData);
+		  	    } else if(selectedBuilding != "None"){
+
+		   			// d3.selectAll(".uncolor")
+			   		// 	.attr("class", "circle");
+			   		d3.selectAll(".selected")
+			   			.attr("class", "uncolor");
+			   		d3.selectAll(".selectedL")
+			   			.attr("class", "legCircle");
+			   	// 	d3.selectAll('.legCircle')
+			   	// 		.attr("opacity", function(c){
+			   	// 			if (building_table.get(c['Building'])[2] == d) {
+							// 	return 1.0;
+							// } else {
+							// 	return .3;
+							// };
+			   	// 		});
+
+			   		d3.json("/api/cache?Type="+d, inspectBuilding);
+		  			selectedBuilding = d;
+
+		  			d3.selectAll('.uncolorL')
+			   			.attr("class", function(c){
+			   				if (c == d) {
+			   					console.log("HERE?");
+								return 'selectedL';
+							} else {
+								return 'uncolorL';
+							};
+			   			});
+
+		   		}
+		   		else {
+		   			d3.json("/api/cache?Type="+d, inspectBuilding);
+		  			selectedBuilding = d;
+
+		  			d3.select("#campussvg")
+						.selectAll(".circle")
+						.attr("class", "uncolor");
+
+					d3.selectAll('.legCircle')
+			   			.attr("class", function(c){
+			   				if (c == d) {
+			   					console.log("HERE?");
+								return 'selectedL';
+							} else {
+								return 'uncolorL';
+							};
+			   			});
+			   	// 	d3.json("/api/cache?Building="+d['Building'], inspectBuilding);
+		  			// selectedBuilding = d['Building'];
+		  			// d3.selectAll(".circle")
+		   		// 		.attr("class", "uncolor");
+
+			   	// 	console.log("#"+d['Building'].replace(/\s/g, ""));
+			   	// 	d3.select("#"+d['Building'].replace(/\s/g, ""))
+			   	// 		.attr("class", "selected");
+		   		}
+		  		// d3.selectAll(".circle")
+			  //  				.attr("class", "uncolor");
+			 //  if (selectedBuilding != "None"){
+			 //  	d3.selectAll(".uncolor")
+	   // 				.attr("class", "circle");
+	   // 			d3.selectAll(".selected")
+	   // 				.attr("class", "circle");
+	   // 			selectedBuilding = "None";
+			 //  }
+
+			 //  d3.select("#campussvg")
+				// .selectAll(".circle")
+				// .attr("class", function(c){
+					
+				// 	if (building_table.get(c['Building'])[2] == d) {
+				// 		return 'selected';
+				// 	} else {
+				// 		return 'uncolor';
+				// 	}
+				// });
+
+		  	});
 
 		legendCircles.append('text')
 		  .attr('x', legendCircleRadius + legendSpacing - 5)
@@ -920,7 +1144,47 @@
 		        div.transition()
 		         .duration(500)
 		         .style("opacity", 0); 
-		     });
+		     })
+	  		.on("mousedown", function(d){
+		  			console.log("PRESSED UPDATED ME!");
+		  			console.log(d);
+		  			if(d3.select("#"+d['Building'].replace(/\s/g, "")).attr("class") == "selected"){
+		  				d3.selectAll(".uncolor")
+				   			.attr("class", "circle");
+				   		d3.selectAll(".selected")
+				   			.attr("class", "circle");
+				   		selectedBuilding = "None";
+				   		updateCharts(origData);
+				   		//LOAD ORIGINAL DATA
+
+			   		} else if(selectedBuilding != "None"){
+
+			   			d3.selectAll(".uncolor")
+				   			.attr("class", "circle");
+				   		d3.selectAll(".selected")
+				   			.attr("class", "circle");
+
+				   		d3.json("/api/cache?Building="+d['Building'], inspectBuilding);
+			  			selectedBuilding = d['Building'];
+			  			d3.selectAll(".circle")
+			   			.attr("class", "uncolor");
+
+				   		console.log("#"+d['Building'].replace(/\s/g, ""));
+				   		d3.select("#"+d['Building'].replace(/\s/g, ""))
+				   			.attr("class", "selected");
+			   			//DO STUFF
+			   		}
+			   		else {
+				   		d3.json("/api/cache?Building="+d['Building'], inspectBuilding);
+			  			selectedBuilding = d['Building'];
+			  			d3.selectAll(".circle")
+			   			.attr("class", "uncolor");
+
+				   		console.log("#"+d['Building'].replace(/\s/g, ""));
+				   		d3.select("#"+d['Building'].replace(/\s/g, ""))
+				   			.attr("class", "selected");
+			   		}
+		  	});
 	  	var circles = svg.selectAll(".circle")
 			.transition()
 			.duration(500);

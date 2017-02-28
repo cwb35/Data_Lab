@@ -14,8 +14,12 @@ from collections import Counter
 app = Flask(__name__)
 unh_buildings = pd.read_csv(r'./Data/Building_Locations.csv')
 list_buildings = unh_buildings['building_names'].tolist()
+query_cache = pd.DataFrame()
+
 @app.route('/api/all', methods=['GET', 'POST'])
 def get_data():
+    
+    global query_cache    
     
     con = sqlite3.connect('WiFi_Database.sqlite')
     query_dict = {}
@@ -28,6 +32,7 @@ def get_data():
         query = ' AND'.join(query_dict.values())
         data = pd.read_sql_query('SELECT * FROM wifi_09_19 WHERE {}'.format(query),
                                  con)
+        query_cache = data
         hour_count = Counter(data["Hour"])
         building_count = Counter(data["Building"])
         time_df = pd.DataFrame([(hour, count) for hour, count in hour_count.items()],
@@ -47,7 +52,7 @@ def get_data():
         #print(json_str.replace("'", '"'))
         return json_str.replace("'", '"')#"["+str(json_df)+"]"
 
-def get_paths(wifi_df, start_building=None, num=10):
+def get_paths(wifi_df, start_building=None, start_buildings=None, num=10):
     """
     Returns nested dictionary of all building paths and # of people who took 
     path for specified day and hour.
@@ -76,6 +81,9 @@ def get_paths(wifi_df, start_building=None, num=10):
         print(start_building, "THIS IS GOOD!")
         path_list = [(key[0], key[1], value) for key, value in paths.items() 
                         if (value != 0) & (key[0] == start_building)]
+    elif start_buildings != None:
+        path_list = [(key[0], key[1], value) for key, value in paths.items() 
+                        if (value != 0) & (key[0] in start_buildings)]
     else:
         path_list = [(key[0], key[1], value) for key, value in paths.items() if value!=0]
         
@@ -122,6 +130,50 @@ def index():
     
     return render_template('index4.html', Hour=Hour, Weekday=Weekday, 
                            Building=Building)
+                           
+@app.route('/api/getcache')
+def get_cache():
+    global query_cache
+    return query_cache.to_json(orient="records")
+    
+@app.route('/api/cache', methods=['GET', 'POST'])
+def get_cached_building():
+    
+    global query_cache
+    
+    building = request.args.get('Building')
+    building_type = request.args.get('Type')
+    if building != None:
+        path_df = get_paths(query_cache, building)
+        df = query_cache[query_cache['Building'] == building]
+        hour_count = Counter(df['Hour'])
+        time_df = pd.DataFrame([(hour, count) for hour, count in hour_count.items()],
+                                columns=["Hour", "Count"])
+                                
+        json_df = {
+                        "Time":time_df.to_dict(orient="records"), 
+                        "Paths":path_df.to_dict(orient="records")
+                        }
+            
+        json_str = "["+str(json_df)+"]"
+        return json_str.replace("'", '"')
+    elif building_type != None:
+        
+        buildings = unh_buildings[unh_buildings['building_type'] == building_type]['building_names']
+        path_df = get_paths(query_cache, start_buildings=buildings.tolist())
+        df = query_cache[query_cache['Building'].isin(buildings)]
+        hour_count = Counter(df['Hour'])
+        time_df = pd.DataFrame([(hour, count) for hour, count in hour_count.items()],
+                                columns=["Hour", "Count"])
+                                
+        json_df = {
+                        "Time":time_df.to_dict(orient="records"), 
+                        "Paths":path_df.to_dict(orient="records")
+                        }
+            
+        json_str = "["+str(json_df)+"]"
+        return json_str.replace("'", '"')
+    
 
 @app.route('/api/wifi', methods=['GET', 'POST'])
 def get_wifi_data():
