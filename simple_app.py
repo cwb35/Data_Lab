@@ -91,9 +91,6 @@ def get_paths(wifi_df, start_building=None, start_buildings=None, num=10):
     return pd.DataFrame(path_list, columns=["start", "end", "count"]).sort(columns=["count"],
                         ascending=False).head(num)
                         
-#def get_connctions(wifi_df, start_building=None):
-    
-#    return Counter(wifi_df['Hours'])
 
 @app.route('/api/building_coords', methods=['GET', 'POST'])
 def get_building_coords():
@@ -128,16 +125,11 @@ def index():
     Weekday = request.args.get('Weekday', '')
     Building = request.args.get("Building", '')
     
-    return render_template('index4.html', Hour=Hour, Weekday=Weekday, 
+    return render_template('index.html', Hour=Hour, Weekday=Weekday, 
                            Building=Building)
-                           
-@app.route('/api/getcache')
-def get_cache():
-    global query_cache
-    return query_cache.to_json(orient="records")
     
 @app.route('/api/cache', methods=['GET', 'POST'])
-def get_cached_building():
+def get_cache():
     
     global query_cache
     

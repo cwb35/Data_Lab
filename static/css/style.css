@@ -62,18 +62,22 @@
 }
 .uncolor {
 	opacity:.2;
+	stroke:black;
 }
 .selectedL {
 	opacity:1;
+	stroke:black;
 }
 .selected {
 	opacity:1;
+	stroke:black;
 }
 circle:hover {
 	opacity:1;
 }
 .circle {
 	opacity: .5;
+	stroke:black;
 	/*fill:blue;*/
 }
 .focus circle {
