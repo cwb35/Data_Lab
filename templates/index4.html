@@ -341,13 +341,19 @@
 		   		if (selectedBuilding == "None"){
 			   		d3.selectAll(".circle")
 			   			.attr("class", "uncolor");
+			   		d3.select("#"+d['start'].replace(/\s/g, ""))
+			   			.attr("class", "selected");
+			   		d3.select("#"+d['end'].replace(/\s/g, ""))
+			   			.attr("class", "selected");
 			   	}
-		   		console.log("#"+d['start'].replace(/\s/g, ""));
-		   		d3.select("#"+d['start'].replace(/\s/g, ""))
-		   			.attr("class", "selected");
-		   		d3.select("#"+d['end'].replace(/\s/g, ""))
-		   			.attr("class", "selected");
-		   		
+			   	else if(selectedBuilding == d['start']){
+			   		console.log("#"+d['start'].replace(/\s/g, ""));
+			   		d3.select("#"+d['start'].replace(/\s/g, ""))
+			   			.attr("class", "selected");
+			   		d3.select("#"+d['end'].replace(/\s/g, ""))
+			   			.attr("class", "selected");
+		   		}
+
 				//Show the tooltip
 				//d3.select("#pathLine").class("hidden", false);
 
@@ -361,7 +367,8 @@
 			   			.attr("class", "circle");
 			   		d3.selectAll(".selected")
 			   			.attr("class", "circle");
-		   		} else {
+		   		} 
+		   		else if(selectedBuilding == d['start']) {
 		   			d3.select("#"+d['end'].replace(/\s/g, ""))
 		   				.attr("class", "circle");
 		   		}
@@ -989,12 +996,21 @@
 			   		updateCharts(origData);
 		  	    } else if(selectedBuilding != "None"){
 
+		   			d3.selectAll(".uncolor")
+			   			.attr("class", "circle");
+			   		d3.selectAll(".selected")
+			   			.attr("class", "circle");
+			   		// d3.selectAll(".uncolorL")
+			   		// 	.attr("class", "legCircle");
+			   		// d3.selectAll(".selectedL")
+			   		// 	.attr("class", "legCircle");
+
 		   			// d3.selectAll(".uncolor")
 			   		// 	.attr("class", "circle");
-			   		d3.selectAll(".selected")
-			   			.attr("class", "uncolor");
-			   		d3.selectAll(".selectedL")
-			   			.attr("class", "legCircle");
+			   		// d3.selectAll(".selected")
+			   		// 	.attr("class", "uncolor");
+			   		// d3.selectAll(".selectedL")
+			   		// 	.attr("class", "legCircle");
 			   	// 	d3.selectAll('.legCircle')
 			   	// 		.attr("opacity", function(c){
 			   	// 			if (building_table.get(c['Building'])[2] == d) {
@@ -1007,7 +1023,7 @@
 			   		d3.json("/api/cache?Type="+d, inspectBuilding);
 		  			selectedBuilding = d;
 
-		  			d3.selectAll('.uncolorL')
+		  			d3.selectAll('.selectedL')
 			   			.attr("class", function(c){
 			   				if (c == d) {
 			   					console.log("HERE?");
@@ -1016,6 +1032,25 @@
 								return 'uncolorL';
 							};
 			   			});
+			   		d3.selectAll('.uncolorL')
+			   			.attr("class", function(c){
+			   				if (c == d) {
+			   					console.log("HERE?");
+								return 'selectedL';
+							} else {
+								return 'uncolorL';
+							};
+			   			});
+			   		d3.select("#campussvg")
+						.selectAll(".circle")
+						.attr("class", function(c){
+					
+							if (building_table.get(c['Building'])[2] == d) {
+								return 'selected';
+							} else {
+								return 'uncolor';
+							};
+					});
 
 		   		}
 		   		else {
@@ -1024,7 +1059,14 @@
 
 		  			d3.select("#campussvg")
 						.selectAll(".circle")
-						.attr("class", "uncolor");
+						.attr("class", function(c){
+					
+							if (building_table.get(c['Building'])[2] == d) {
+								return 'selected';
+							} else {
+								return 'uncolor';
+							};
+					});
 
 					d3.selectAll('.legCircle')
 			   			.attr("class", function(c){
