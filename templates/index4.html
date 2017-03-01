@@ -970,6 +970,8 @@
 		  .on('mousedown', function(d){
 		  	    console.log(d);
 		  	    if(selectedBuilding == d){
+		  	    	d3.selectAll(".selected")
+		  	    		.attr("class", "circle");
 		  	    	d3.selectAll(".uncolor")
 				   		.attr("class", "circle");
 			   		d3.selectAll(".selectedL")
