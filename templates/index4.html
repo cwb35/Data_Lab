@@ -353,6 +353,10 @@
 			   		d3.select("#"+d['end'].replace(/\s/g, ""))
 			   			.attr("class", "selected");
 		   		}
+		   		else if(d3.select("#"+d['end'].replace(/\s/g, "")).attr('class') != "selected"){
+		   			d3.select("#"+d['end'].replace(/\s/g, ""))
+			   			.attr("class", "selected");
+		   		}
 
 				//Show the tooltip
 				//d3.select("#pathLine").class("hidden", false);
@@ -369,6 +373,10 @@
 			   			.attr("class", "circle");
 		   		} 
 		   		else if(selectedBuilding == d['start']) {
+		   			d3.select("#"+d['end'].replace(/\s/g, ""))
+		   				.attr("class", "circle");
+		   		}
+		   		else if((d3.select("#"+d['end'].replace(/\s/g, "")).attr('class') == "selected") & (building_table.get(d['end'])[2] != selectedBuilding)){
 		   			d3.select("#"+d['end'].replace(/\s/g, ""))
 		   				.attr("class", "circle");
 		   		}
