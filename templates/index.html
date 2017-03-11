@@ -3,10 +3,12 @@
 <meta charset="utf-8">
 <title>Data Lab Project</title>
 <script src="https://d3js.org/d3.v4.min.js"> </script>
+<script src="static/js/noUiSlider.9.2.0/nouislider.min.js"></script>
 <!-- <script src="static/JS/d3-tip.js"></script> -->
 <!-- <script src="static/JS/d3.legend.js"></script> -->
 <head>
 	<link rel="stylesheet" type="text/css" href="static/css/style.css">
+	<link rel="stylesheet" type="text/css" href="static/css/nouislider.min.css">
 </head>
 
 <div id="tooltip" class="hidden">
@@ -18,20 +20,39 @@
 
 <div class="dashboard">
 	<div class="header">
-		<p> Enter the values in the fields below!</p>
-		<form>
-			Start Hour = <input id="startHour" type="text" name="startHour" value=0>
-			End Hour = <input id="endHour" type="text" name="endHour" value=8>
-			Weekday is = <input id="Weekday" type="text" name="Weekday" value=0>
+		
+		<!-- <p> Enter the values in the fields below!</p> -->
+		<form class="weekdayForm">
+			<!-- Start Hour = <input id="startHour" type="text" name="startHour" value=0> -->
+			<!-- End Hour = <input id="endHour" type="text" name="endHour" value=8> <br> -->
+			<!-- Weekday is = <input id="Weekday" type="text" name="Weekday" value=0> -->
+			<!-- <div class="weekdays"> <b> Select Weekday:                     </b> -->
+			Select Weekdays:
+			<div class="checkbox"> Monday <input id="Monday" type="checkbox" name="Monday" value="Monday" checked="checked"></div>
+			<div class="checkbox"> Tuesday <input id="Tuesday" type="checkbox" name="Tuesday" value="Tuesday"></div>
+			<div class="checkbox"> Wednesday <input id="Wednesday" type="checkbox" name="Wednesday" value="Wednesday"></div>
+			<div class="checkbox"> Thursday <input id="Thursday" type="checkbox" name="Thursday" value="Thursday"></div>
+			<div class="checkbox"> Friday <input id="Friday" type="checkbox" name="Friday" value="Friday"></div>
+			<div class="checkbox"> Saturday <input id="Saturday" type="checkbox" name="Saturday" value="Saturday"></div>
+			<div class="checkbox"> Sunday <input id="Sunday" type="checkbox" name="Sunday" value="Sunday"></div>
+			<!-- </div> -->
 			<!-- Building is = <input id="Building" type="text" name="Building" value="Enter Building"> -->
 			<input name="update" type="Button" value="Update!" onclick="updateData()">
 		</form>
+		<div class='timeBlock'>
+			<div class="textHour"> Select Hour Range: </div>
+			<div id="slider"></div>
+		</div>
 	</div>
 	<div class="body">
-		<div class="sidebar">This is the sidebar</div>
+		<div class="sidebar">
+			<div class="options"></div>
+			<div class="description"></div>
+		</div>
+
 		<div class="geoplot">
 			<svg  id="campussvg" width="600px" height="620px" x="0" y="0">
-  				<image xlink:href="static/images/campus_map3.png" x="0" y="0" height="620px" width="600px"/>
+  				<!-- <image class="hidden" xlink:href="static/images/campus_map3.png" x="0" y="0" height="620px" width="600px"/> -->
 <!--   				<defs>
 				    <marker id="Triangle" viewBox="0 0 7 7" refX="10" refY="10"
 				        markerWidth="6" markerHeight="6" orient="auto" fill="black" opacity=".7">
@@ -56,6 +77,29 @@
 <script type="text/javascript">
 
 /** INSERT BUILDING TABLE **/
+
+	var slider = document.getElementById('slider');
+	slider.style.width = '800px';
+	slider.style.height = '5px';
+	slider.style.float = 'left';
+	slider.style.margin = '0px auto 60px';
+
+	noUiSlider.create(slider, {
+		start: [0, 8],
+		connect: true,
+		//direction: 'rtl',
+		behaviour: 'tap-drag',
+		step: 1,
+		range: {
+			'min': 0,
+			'max': 23
+		},
+		pips: { // Show a scale with the slider
+			mode: 'steps',
+			stepped: true,
+			density: 4
+		}
+	});
 	
 	var initialized = 0;
 
@@ -80,9 +124,9 @@
 
 	function pathBarChartBasics() {
 
-		var margin = {top: 30, right: 10, bottom: 10, left: 30},
-		width = 300,
-	   	height = 300,
+		var margin = {top: 20, right: 10, bottom: 10, left: 30},
+		width = 400,
+	   	height = 320,
 		barPadding = 1
 		;
 		
@@ -164,6 +208,24 @@
 		   .attr("stop-color", "blue")
 		   .attr("stop-opacity", 1);
 
+		//Adding text
+		svg.append("text")             
+	          .attr("transform",
+	                "translate(" + (w/2) + " ," + 
+	                               (innerHeight + margin.top - 10) + ")")
+	          .style("text-anchor", "middle")
+	          .text("Count");
+
+	    svg.append("text")             
+	          .attr("transform",
+	                "translate(" + (w/2) + " ," + 
+	                               (margin.top - 5) + ")")
+	          .style("text-anchor", "middle")
+	          .style("font-size", "20")
+	          .style("font-weight", "thick")
+	          .style("text-decoration", "underline")
+	          .text("Top 10 Paths");
+
 		//Appending group to svg
 		var g = svg.append("g")
 			.attr("id", "pathGroup1")
@@ -175,7 +237,7 @@
 		//Adding x-axis to new group and translating axis
 		var xAxisG = g.append("g")
 			.attr("id", "pathChartXAxis")
-			.attr("transform", "translate(0," + (innerHeight - margin.bottom) + ")");
+			.attr("transform", "translate(0," + (innerHeight - margin.bottom - 30) + ")");
 
 		//Adding y-axis to new group but setting no attributes
 		//var yAxisG = g.append("g");
@@ -522,13 +584,28 @@
 
 	function updateData(){
 
-			var startHour = d3.select("#startHour").property("value");
-			var endHour = 1 + parseInt(d3.select("#endHour").property("value"));
+			var startHour = parseInt(slider.noUiSlider.get()[0]);
+			//var startHour = d3.select("#startHour").property("value");
+			var endHour = parseInt(slider.noUiSlider.get()[1]) + 1;//1 + parseInt(d3.select("#endHour").property("value"));
 			console.log("startHour: " + startHour)
 			console.log("endHour: " + endHour)
 			console.log("newRange: " + d3.range(startHour, endHour))
 			var Hour = d3.range(startHour, endHour)
-			var Weekday = d3.select("#Weekday").property("value");
+
+			var Weekday_array = [];
+			d3.select(".weekdayForm").selectAll("input")._groups[0].forEach(function(d, i){
+				
+				if(d.checked == true){
+					Weekday_array.push(i);
+				}
+			});
+			console.log("WEEKDAY_ARRAY: ", Weekday_array);
+			// if (d3.select("#Monday").property("checked") == "checked"){
+			// 	Weekday = 0;
+			// 	console.log("MONDAY IS CHECKED!");
+			// }
+
+			//var Weekday = d3.select("#Weekday").property("value");
 			// var Building = d3.select("#Building").property("value");
 			// console.log("HOUR IS: "+Hour.toString()+" WEEKDAY IS: "+Weekday+" BUILDING IS: "+Building);
 
@@ -536,9 +613,16 @@
 
 			if (initialized==0){
 				initialized = 1;
-				d3.json("/api/all?Hour="+Hour.toString()+"&Weekday="+Weekday, type);//+"&Building="+Building, type);
+				d3.select("#campussvg").append("image")
+					.attr("xlink:href", "static/images/campus_map3.png")
+					.attr("x", "0")
+					.attr("y", "0")
+					.attr("height", "620px")
+					.attr("width", "600px");
+				// <image class="hidden" xlink:href="static/images/campus_map3.png" x="0" y="0" height="620px" width="600px"/>
+				d3.json("/api/all?Hour="+Hour.toString()+"&Weekday="+Weekday_array, type);//+"&Building="+Building, type);
 			} else {
-				d3.json("/api/all?Hour="+Hour.toString()+"&Weekday="+Weekday, newQuery);//updateCharts);
+				d3.json("/api/all?Hour="+Hour.toString()+"&Weekday="+Weekday_array, newQuery);//updateCharts);
 			}
 				//d3.json("/api/wifi?Hour="+Hour.toString()+"&Weekday="+Weekday+"&Building="+Building, type);
 				//d3.json("/api/connections?Hour="+Hour.toString()+"&Weekday="+Weekday+"&Building="+Building, type2);
@@ -550,8 +634,8 @@
 			//}
 	}    
 	function scatterPlotBasics(){
-		var margin = {top: 30, right: 30, bottom: 30, left: 50},
-			width = 300,
+		var margin = {top: 10, right: 30, bottom: 30, left: 50},
+			width = 400,
 		   	height = 300,
 			circleRadius = 5
 			;
