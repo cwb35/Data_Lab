@@ -139,6 +139,10 @@ circle:hover {
 	transition: opacity 300ms;
 	/*fill:blue;*/
 }
+.hiddenCircle {
+	display:none;
+	opacity:0.0;
+}
 .focus circle {
   fill: none;
   stroke: steelblue;

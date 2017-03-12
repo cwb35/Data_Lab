@@ -34,7 +34,12 @@ def get_data():
                                  con)
         query_cache = data
         hour_count = Counter(data["Hour"])
-        building_count = Counter(data["Building"])
+        building_count = dict(Counter(data["Building"]))
+
+        for bname in list_buildings:
+            if bname not in building_count:
+                building_count[bname] = 0
+        
         time_df = pd.DataFrame([(hour, count) for hour, count in hour_count.items()],
                             columns=["Hour", "Count"])
         bad_buildings = {"Woodman", "Craft", "DeMeritt", "Woodside", "Observatory"}
