@@ -59,7 +59,7 @@
 				      	<path d="M 0 0 L 6 3 L 0 6 z" />
 				    </marker>
 				</defs> -->
-  				<line id= "pathLine" class="hidden" x1="0" x2="100" y1="0" y2="0" stroke-width="3" stroke="black"/>
+  				<!-- <line id= "pathLine" class="hidden" x1="0" x2="100" y1="0" y2="0" stroke-width="3" stroke="black"/> -->
   			</svg>
 		</div>
 		<div class="plots">
@@ -285,6 +285,8 @@
 				//var xPosition = parseFloat(d3.select(this).attr("x")) + xScale.bandwidth() / 2;
 				//var yPosition = parseFloat(d3.select(this).attr("y")) / 2 + h / 2;
 
+				d3.select("#campussvg").transition().duration(2000);
+
 				//Update the tooltip position and value
 				d3.select("#pathLine")
 					.attr("x1", longitudeScale(building_table.get(d['start'])[0]) - 4)
@@ -293,6 +295,7 @@
 					.attr("y2", latitudeScale(building_table.get(d['end'])[1]) + 4)
 					//.attr("stroke-width", lineScale(d['count']))
 					.attr("class", "show");
+
 					//.style("top", yPosition + "px");						
 					//.select("#value")
 					//.text("There are "+d.count+" people going to "+d.end);
@@ -503,9 +506,11 @@
 
 
 	function type(data) {
-		console.log("AT TYPE!");
+		console.log("AT TYPE!", data);
+		console.log("Buildings:", data[0]["Buildings"]);
 		data[0]["Buildings"].forEach(function(d){
 			d.Count = +d.Count;
+			console.log(d.Building + " " + d.Count);
 		});
 		data[0]["Time"].forEach(function(d){
 			d.Count = +d.Count;
@@ -619,7 +624,17 @@
 					.attr("y", "0")
 					.attr("height", "620px")
 					.attr("width", "600px");
-				// <image class="hidden" xlink:href="static/images/campus_map3.png" x="0" y="0" height="620px" width="600px"/>
+				//Appending Path line	
+				d3.select("#campussvg").append("line")
+		  			.attr("id", "pathLine")
+		  			.attr("class", "hidden")
+		  			.attr("x1", "0")
+		  			.attr("x2", "100")
+		  			.attr("y1", "0")
+		  			.attr("y2", "0")
+		  			.attr("stroke-width", "3")
+		  			.attr("stroke", "black");
+				
 				d3.json("/api/all?Hour="+Hour.toString()+"&Weekday="+Weekday_array, type);//+"&Building="+Building, type);
 			} else {
 				d3.json("/api/all?Hour="+Hour.toString()+"&Weekday="+Weekday_array, newQuery);//updateCharts);
@@ -967,6 +982,18 @@
 
   		var svg = d3.select("#campussvg");
 
+  		// //Add path line
+  		// //<line id= "pathLine" class="hidden" x1="0" x2="100" y1="0" y2="0" stroke-width="3" stroke="black"/>
+  		// svg.append("line")
+  		// 	.attr("id", "pathLine")
+  		// 	.attr("class", "hidden")
+  		// 	.attr("x1", "0")
+  		// 	.attr("x2", "100")
+  		// 	.attr("y1", "0")
+  		// 	.attr("y2", "0")
+  		// 	.attr("stroke-width", "3")
+  		// 	.attr("stroke", "black");
+
 		var div = d3.select("body").append("div")
 					.attr("id", "buildingTooltip")
 				    .attr("class", "tooltip")
@@ -986,7 +1013,7 @@
 		  			return circleScale(d['Count']);
 		  		})
 		  		.attr("cx", function(d) {
-		  			console.log("NOT SUPPOSED TO BE HERE!");
+		  			console.log("NOT SUPPOSED TO BE HERE!" + d['Building']);
 		  			return longitudeScale(building_table.get(d['Building'])[0]) - 4;
 		  		})
 		  		.attr("cy", function(d){

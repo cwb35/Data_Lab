@@ -119,6 +119,7 @@
 .uncolor {
 	opacity:.2;
 	stroke:black;
+	transition: opacity 300ms;
 }
 .selectedL {
 	opacity:1;
@@ -127,6 +128,7 @@
 .selected {
 	opacity:1;
 	stroke:black;
+	transition: opacity 300ms;
 }
 circle:hover {
 	opacity:1;
@@ -134,6 +136,7 @@ circle:hover {
 .circle {
 	opacity: .5;
 	stroke:black;
+	transition: opacity 300ms;
 	/*fill:blue;*/
 }
 .focus circle {

@@ -37,7 +37,7 @@ def get_data():
         building_count = Counter(data["Building"])
         time_df = pd.DataFrame([(hour, count) for hour, count in hour_count.items()],
                             columns=["Hour", "Count"])
-        bad_buildings = {"Woodman", "Craft", "DeMeritt", "Woodside"}
+        bad_buildings = {"Woodman", "Craft", "DeMeritt", "Woodside", "Observatory"}
         building_df = pd.DataFrame([(building, count) for building, count in building_count.items() if building not in bad_buildings],
                             columns=["Building", "Count"])
         path_df = get_paths(data, start_building=request.args.get("Building"))
