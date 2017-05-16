@@ -24,6 +24,9 @@ DATA_PATH = "./Data/WiFi_Data/"
 CONVERT_TIME = lambda x: parse(x.replace('+00', ''))
 
 def run():
+    """
+    Reads in data files, preprocesses them and then creates the SQLite DB.
+    """
     
     t0 = time.time()
     file_names = [name for name in os.listdir(DATA_PATH) if name.endswith('.csv')]
@@ -78,7 +81,6 @@ def run():
     
     print("Finished Running Script in {} Seconds!".format(round(time.time() - t0),2))
 if __name__ == "__main__":
-    
     run()
     
 
