@@ -16,7 +16,7 @@ This project takes that project a step further by creating a web application tha
 
 The goal of the project was to get experience using D3.js and creating a web application and API with Python's Flask that was capable of interfacing with D3.js.
 
-#Project Files
+# Project Files
 
 	.
 	├── Data
@@ -54,7 +54,7 @@ The goal of the project was to get experience using D3.js and creating a web app
 
 Other than the [nouislider](https://refreshless.com/nouislider/) code all of the files above were created by me.
 
-#Requirements
+# Requirements
 
 To run the web application one needs Python installed. From there you can install all the required packages by running the following command:
 
@@ -62,7 +62,7 @@ To run the web application one needs Python installed. From there you can instal
 
 From the project directory.
 
-#Setup
+# Setup
 
 Before the web application can be run, the sqlite database first has to be initialized. This is done through running the setup.py file.
 
@@ -70,7 +70,7 @@ Before the web application can be run, the sqlite database first has to be initi
 
 This should take 5-10 minutes to complete.
 
-#Run
+# Run
 
 To run the web application you now have to run the application.py script like so:
 
