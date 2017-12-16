@@ -103,7 +103,7 @@ def get_paths(wifi_df, start_building=None, start_buildings=None, num=10):
         path_list = [(key[0], key[1], value) for key, value in paths.items() if value!=0]
         
     
-    return pd.DataFrame(path_list, columns=["start", "end", "count"]).sort(columns=["count"],
+    return pd.DataFrame(path_list, columns=["start", "end", "count"]).sort_values(by=["count"],
                         ascending=False).head(num)
                         
 
