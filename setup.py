@@ -55,7 +55,7 @@ def run():
     p.update(iterations=17)
     wifi_df['Minutes'] = [time.minute for time in wifi_df.Time]
     p.update(iterations=18)
-    wifi_df = wifi_df.sort(columns='Time')
+    wifi_df = wifi_df.sort_values(by='Time')
     
     print('---------------------------------------------------')
     print('-----------------Creating Database:-----------------')

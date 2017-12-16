@@ -1,5 +1,4 @@
 # Requirements File for Data Lab project
 pandas
 flask
-sqlite3
 pyprind
